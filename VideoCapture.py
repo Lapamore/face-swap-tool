@@ -10,7 +10,6 @@ class FaceSwapper():
     def __init__(self, img_source_path):
         self.img_source_path = img_source_path
 
-
     def read_and_resize_images(self):
         self.img_source = cv2.imread(self.img_source_path)
         self.img_source = cv2.resize(self.img_source, (self.img_source.shape[1] // 2, self.img_source.shape[0] // 2))
