@@ -14,8 +14,8 @@ class FaceSwapper():
     def read_and_resize_images(self):
         self.img_destination = cv2.imread(self.img_destination_path)
         self.img_source = cv2.imread(self.img_source_path)
-        self.img_source = cv2.resize(self.img_source, (self.img_source.shape[1] // 2, self.img_source.shape[0] // 2))
-        self.img_destination = cv2.resize(self.img_destination, (self.img_destination.shape[1] // 2, self.img_destination.shape[0] // 2))
+        #self.img_source = cv2.resize(self.img_source, (self.img_source.shape[1] // 2, self.img_source.shape[0] // 2))
+        #self.img_destination = cv2.resize(self.img_destination, (self.img_destination.shape[1] // 2, self.img_destination.shape[0] // 2))
         self.img_source_gray = cv2.cvtColor(self.img_source, cv2.COLOR_BGR2GRAY)
         self.img_destination_gray = cv2.cvtColor(self.img_destination, cv2.COLOR_BGR2GRAY)
 
