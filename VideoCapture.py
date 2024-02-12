@@ -12,38 +12,41 @@ class FaceSwapper():
 
     def read_and_resize_images(self):
         self.img_source = cv2.imread(self.img_source_path)
-        self.img_source = cv2.resize(self.img_source, (self.img_source.shape[1] // 2, self.img_source.shape[0] // 2))
+        #self.img_source = cv2.resize(self.img_source, (self.img_source.shape[1] // 2, self.img_source.shape[0] // 2))
         self.img_source_gray = cv2.cvtColor(self.img_source, cv2.COLOR_BGR2GRAY)
 
     def process_images(self):
-        cap = cv2.VideoCapture(0) 
+        cap = cv2.VideoCapture('images/video.MOV') 
+        landmarks_source, triangle_source, _ = get_landmarks_and_triangles(self.img_source_gray)
+        triangles_indeces = find_triangle_indices(triangle_source, landmarks_source)
+        face_1 = []
+
+        for index in triangles_indeces:
+            # Первое лицо
+            pt1 = landmarks_source[index[0]]
+            pt2 = landmarks_source[index[1]]
+            pt3 = landmarks_source[index[2]]
+            triangle1 = np.array([pt1, pt2, pt3], np.int32)
+            (x, y, w, h) = cv2.boundingRect(triangle1)
+            cropped_triangle = self.img_source[y: y + h, x: x + w]
+
+            points = np.array([[pt1[0] - x, pt1[1] - y],
+                               [pt2[0] - x, pt2[1] - y],
+                               [pt3[0] - x, pt3[1] - y]], np.int32)
+            
+            face_1.append((cropped_triangle, points))
 
         while True:
             _, img_destination = cap.read()
-            img_destination = cv2.resize(img_destination, (img_destination.shape[1] // 4, img_destination.shape[0] // 4))
+            img_destination = cv2.resize(img_destination, (img_destination.shape[1] // 2, img_destination.shape[0] // 2))
             img_destination_gray = cv2.cvtColor(img_destination, cv2.COLOR_BGR2GRAY)    
             img_face = np.zeros(img_destination.shape, np.uint8) 
             img_face_mask = np.zeros_like(img_destination_gray)
-
-            landmarks_source, triangle_source, _ = get_landmarks_and_triangles(self.img_source_gray)
             landmarks_destination, _, convexhull2 = get_landmarks_and_triangles(img_destination_gray)
-
-            triangles_indeces = find_triangle_indices(triangle_source, landmarks_source)
-
-            for index in triangles_indeces:
+            
+            for idx, index in enumerate(triangles_indeces):
                 # Первое лицо
-                pt1 = landmarks_source[index[0]]
-                pt2 = landmarks_source[index[1]]
-                pt3 = landmarks_source[index[2]]
-                triangle1 = np.array([pt1, pt2, pt3], np.int32)
-
-                (x, y, w, h) = cv2.boundingRect(triangle1)
-                cropped_triangle = self.img_source[y: y + h, x: x + w]
-
-                points = np.array([[pt1[0] - x, pt1[1] - y],
-                                [pt2[0] - x, pt2[1] - y],
-                                [pt3[0] - x, pt3[1] - y]], np.int32)
-
+                cropped_triangle, points = face_1[idx]
                 # Второе лицо
                 pt1_ = landmarks_destination[index[0]]
                 pt2_ = landmarks_destination[index[1]]
