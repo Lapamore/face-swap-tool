@@ -16,7 +16,7 @@ class FaceSwapper():
         self.img_source_gray = cv2.cvtColor(self.img_source, cv2.COLOR_BGR2GRAY)
 
     def process_images(self):
-        cap = cv2.VideoCapture('images/video.MOV') 
+        cap = cv2.VideoCapture(0) 
         landmarks_source, triangle_source, _ = get_landmarks_and_triangles(self.img_source_gray)
         triangles_indeces = find_triangle_indices(triangle_source, landmarks_source)
         face_1 = []
