@@ -14,15 +14,11 @@ class FaceSwapper():
         self.img_source = cv2.imread(self.img_source_path)
         #self.img_source = cv2.resize(self.img_source, (self.img_source.shape[1] // 2, self.img_source.shape[0] // 2))
         self.img_source_gray = cv2.cvtColor(self.img_source, cv2.COLOR_BGR2GRAY)
-
-    def process_images(self):
-        cap = cv2.VideoCapture(0) 
-        landmarks_source, triangle_source, _ = get_landmarks_and_triangles(self.img_source_gray)
-        triangles_indeces = find_triangle_indices(triangle_source, landmarks_source)
-        face_1 = []
+    
+    def extract_face_triangles(self, triangles_indeces, landmarks_source):
+        face_triangles = []
 
         for index in triangles_indeces:
-            # Первое лицо
             pt1 = landmarks_source[index[0]]
             pt2 = landmarks_source[index[1]]
             pt3 = landmarks_source[index[2]]
@@ -34,7 +30,15 @@ class FaceSwapper():
                                [pt2[0] - x, pt2[1] - y],
                                [pt3[0] - x, pt3[1] - y]], np.int32)
             
-            face_1.append((cropped_triangle, points))
+            face_triangles.append((cropped_triangle, points))
+
+        return face_triangles
+
+    def process_images(self):
+        cap = cv2.VideoCapture(0) 
+        landmarks_source, triangle_source, _ = get_landmarks_and_triangles(self.img_source_gray)
+        triangles_indeces = find_triangle_indices(triangle_source, landmarks_source)
+        face_triangles = self.extract_face_triangles(triangles_indeces, landmarks_source)
 
         while True:
             _, img_destination = cap.read()
@@ -46,7 +50,7 @@ class FaceSwapper():
             
             for idx, index in enumerate(triangles_indeces):
                 # Первое лицо
-                cropped_triangle, points = face_1[idx]
+                cropped_triangle, points = face_triangles[idx]
                 # Второе лицо
                 pt1_ = landmarks_destination[index[0]]
                 pt2_ = landmarks_destination[index[1]]
